@@ -1,4 +1,4 @@
-type Player = null | 'white' | 'black'
+export type Player = null | 'white' | 'black'
 export interface Status {
     currentPlayer: Player
     game: Player[][]
