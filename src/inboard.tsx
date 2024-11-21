@@ -9,14 +9,19 @@ const Inboard: React.FC = () => {
         )
     );
     return (
-        <div className="inboard" style={{
-            display: "grid",
-            gridTemplateRows: "repeat(8, 60px)",
-            gridTemplateColumns: "repeat(8, 60px)"
-        }}>
-            <StatusProvider>
-                {CellJSX}
-            </StatusProvider>
+        <div className="inboard">
+            <div style={{
+                margin: "5px",
+                display: "grid",
+                gridTemplateRows: "repeat(8, 50px)",
+                gridTemplateColumns: "repeat(8, 50px)",
+                gridRowGap: "10px",
+                gridColumnGap: "10px"
+            }}>
+                <StatusProvider>
+                    {CellJSX}
+                </StatusProvider>
+            </div>
         </div>
     )
 }
