@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黑白棋网页版</title>
+    <style>
+        body {
+            background-color: #e0e0e0;
+            margin: 0px;
+        }
+
+        .dashboard {
+            height: 580px;
+            width: 520px;
+            position: fixed;
+            left: calc(50vw - 260px);
+            top: calc(50vh - 290px);
+            border-radius: 30px;
+            background: #ae5f04;
+            box-shadow: 52px 58px 110px #C9a881,
+                -52px -58px 110px #ffffff;
+        }
+
+        .inboard {
+            height: 480px;
+            width: 480px;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #4fa738, #5ec642);
+            box-shadow: inset 10px 10px 20px #8bbb7e,
+                inset -10px -10px 20px #abdc9e;
+        }
+
+        .idbNewGame,
+        .idbHint {
+            height: 40px;
+            width: 80px;
+            position: absolute;
+            top: 520px;
+            border-radius: 20px;
+            text-align: center;
+            font-family: 'Microsoft Yahei', '楷体';
+            font-size: 15px;
+            line-height: 40px;
+            font-weight: 200;
+            color: #878787;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            text-shadow: 2px 2px 2px #bebebe;
+            background: linear-gradient(145deg, #f0f0f0, #cacaca);
+            /* box-shadow: 8px 4px 10px #bebebe,
+                    -8px -4px 10px #ffffff; */
+        }
+
+        .idbNewGame:active,
+        .idbHint:active {
+            box-shadow: inset 8px 4px 8px #bebebe, inset -8px -4px 8px #ffffff;
+        }
+
+        .idbNewGame {
+            left: 140px;
+        }
+
+        .idbHint {
+            left: 300px;
+        }
+
+        .idbGameModeSelector {
+            position: absolute;
+            height: 40px;
+            width: 100px;
+            left: 50px;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            line-height: 40px;
+            font-size: 20px;
+            background-color: #4488aa;
+            color: #e0e0e0;
+            text-align: center;
+            box-shadow: 10px 10px 5px #aaaaaa;
+        }
+    </style>
+    <script>
+        class Array2 {
+            constructor(x, y) {
+                this.data = new Array(x * y);
+                this.x = x;
+                this.y = y;
+            }
+            get(i, j) {
+                return this.data[i * this.x + j];
+            }
+            set(i, j, val) {
+                this.data[i * this.x + j] = val;
+            }
+        }
+
+        game = new Object;
+        game.mode = "";
+        game.current_player = 0;
+        game.black = 1;
+        game.white = 2;
+        Object.freeze(game.black);
+        Object.freeze(game.white);
+        game.board = new Array2(10, 10);
+        for (let i = 0; i < 100; i++)
+            game.board.data[i] = 0;
+        game.level = new Array2(10, 10);
+        for (let i = 0; i < 100; i++)
+            game.level.data[i] = 0;
+        game.winMap = new Array2(10, 10);
+        game.backup = new Array2(10, 10);
+        game.current_player_shower = document.createElement('div');
+        function NewGameInitial() {
+
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
+                    game.board.set(i, j, 0);
+                }
+            }
+
+            game.board.set(4, 4, 2);
+            game.board.set(4, 5, 1);
+            game.board.set(5, 4, 1);
+            game.board.set(5, 5, 2);
+
+
+            game.level.set(1, 1, 64);
+            game.level.set(1, 8, 64);
+            game.level.set(8, 1, 64);
+            game.level.set(8, 8, 64);
+
+            game.level.set(1, 2, -32);
+            game.level.set(2, 1, -32);
+            game.level.set(1, 7, -32);
+            game.level.set(2, 8, -32);
+            game.level.set(7, 1, -32);
+            game.level.set(8, 2, -32);
+            game.level.set(8, 7, -32);
+            game.level.set(7, 8, -32);
+
+            game.level.set(2, 2, -64);
+            game.level.set(2, 7, -64);
+            game.level.set(7, 2, -64);
+            game.level.set(7, 7, -64);
+
+            for (let i = 3; i <= 6; i++) {
+                game.level.set(1, i, 32);
+                game.level.set(i, 1, 32);
+                game.level.set(8, i, 32);
+                game.level.set(i, 8, 32);
+                game.level.set(3, i, 16);
+                game.level.set(i, 3, 16);
+                game.level.set(6, i, 16);
+                game.level.set(i, 6, 16);
+            }
+
+
+            game.current_player = game.black;
+            game.current_player_shower.style.backgroundColor = 'black';
+            display();
+            if (game.mode == 'white') {
+                let position = run(game.black);
+                click(position.X, position.Y);
+            }
+        }
+        function judge() {
+            let B = 0, W = 0;
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 8; j++) {
+                    if (game.board.get(i, j) == game.black)
+                        B++;
+                    if (game.board.get(i, j) == game.white)
+                        W++;
+                }
+            }
+            return { black: B, white: W };
+        }
+        function forever(x, y) {
+            let n = 0;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if ((i == 0) && (j == 0))
+                        continue;
+                    if (game.board.get(x + i, y + j) == 0)
+                        n++;
+                }
+            }
+            return n;
+        }
+        function display() {
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 8; j++) {
+                    switch (game.board.get(i, j)) {
+                        case game.black:
+                            game.winMap.get(i, j).style.backgroundColor = 'black';
+
+                            break;
+                        case game.white:
+                            game.winMap.get(i, j).style.backgroundColor = 'white';
+                            break;
+
+                        default:
+                            game.winMap.get(i, j).style.backgroundColor = null;
+                            break;
+                    }
+                }
+            }
+        }
+        function check(x, y) {
+            if ((x < 1) || (x > 8) || (y < 1) || (y > 8))
+                return 0;
+            if (game.board.get(x, y) != 0)
+                return 0;
+
+            for (let i = 1; i <= 8; ++i)
+                for (let j = 1; j <= 8; ++j)
+                    game.backup.set(i, j, game.board.get(i, j));
+            game.backup.set(x, y, game.player);
+
+            let t = 0;
+            let u, v;
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    if ((dx != 0) || (dy != 0)) {
+                        u = x;
+                        v = y;
+                        while (game.backup.get(u + dx, v + dy) == 3 - game.current_player) {
+                            u += dx;
+                            v += dy;
+                        }
+                        if (game.backup.get(u + dx, v + dy) == game.current_player) {
+                            u = x; v = y;
+                            while (game.backup.get(u + dx, v + dy) == 3 - game.current_player) {
+                                ++t;
+                                u += dx;
+                                v += dy;
+                                game.backup.set(u, v, game.current_player);
+                            }
+                        }
+                    }
+                }
+            }
+            return t;
+        }
+        function chess(x, y) {
+            for (let i = 1; i <= 8; ++i)
+                for (let j = 1; j <= 8; ++j)
+                    game.backup.set(i, j, game.board.get(i, j));
+            game.backup.set(x, y, game.current_player);
+
+            let t = 0;
+            let u, v;
+            for (let dx = -1; dx <= 1; ++dx)
+                for (let dy = -1; dy <= 1; ++dy)
+                    if ((dx != 0) || (dy != 0)) {
+                        u = x; v = y;
+                        while (game.backup.get(u + dx, v + dy) == 3 - game.current_player) {
+                            u += dx;
+                            v += dy;
+                        }
+                        if (game.backup.get(u + dx, v + dy) == game.current_player) {
+                            u = x; v = y;
+                            while (game.backup.get(u + dx, v + dy) == 3 - game.current_player) {
+                                ++t;
+                                u += dx;
+                                v += dy;
+                                game.board.set(u, v, game.current_player);
+                                switch (game.current_player) {
+                                    case game.black:
+                                        game.winMap.get(u, v).style.backgroundColor = 'black';
+
+                                        break;
+                                    case game.white:
+                                        game.winMap.get(u, v).style.backgroundColor = 'white';
+                                        break;
+
+                                    default:
+                                        game.winMap.get(u, v).style.backgroundColor = null;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+            return;
+        }
+        function chessable(splayer) {
+            let t = game.current_player;
+            game.current_player = splayer;
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 8; j++) {
+                    if (check(i, j) != 0) {
+                        game.current_player = t;
+                        return true;
+                    }
+                }
+            }
+            game.current_player = t;
+            return false;
+        }
+
+        function run(splayer) {
+            if (game.board.get(1, 1) == splayer) {
+                for (let i = 2; i < 8; i++)
+                    if (game.board.get(i, i - 1) == splayer)
+                        game.level.set(1, i, 48);
+                    else
+                        break;
+                for (let i = 2; i < 8; i++)
+                    if (game.board.get(i - 1, i) == splayer)
+                        game.level.set(i, 1, 48);
+                    else
+                        break;
+                game.level.set(2, 2, 48);
+            }
+            if (game.board.get(1, 1) == 3 - splayer) {
+                if (game.board.get(1, 3) == 3 - splayer)
+                    game.level.set(1, 2, 64);
+                if (game.board.get(3, 1) == 3 - splayer)
+                    game.level.set(2, 1, 64);
+            }
+            if (game.board.get(1, 8) == splayer) {
+                for (let i = 7; i > 1; i--)
+                    if (game.board.get(1, i + 1) == splayer)
+                        game.level.set(1, i, 48);
+                    else
+                        break;
+                for (let i = 2; i < 8; i++)
+                    if (game.board.get(i - 1, 8) == splayer)
+                        game.level.set(i, 8, 48);
+                    else
+                        break;
+                game.level.set(2, 7, 48);
+            }
+            if (game.board.get(1, 8) == 3 - splayer) {
+                if (game.board.get(1, 6) == 3 - splayer)
+                    game.level.set(1, 7, 64);
+                if (game.board.get(3, 8) == 3 - splayer)
+                    game.level.set(2, 8, 64);
+            }
+            if (game.board.get(8, 1) == splayer) {
+                for (let i = 2; i < 8; i++)
+                    if (game.board.get(8, i - 1) == splayer)
+                        game.level.set(8, i, 48);
+                    else
+                        break;
+                for (let i = 7; i > 1; i--)
+                    if (game.board.get(i + 1, 1) == splayer)
+                        game.level.set(i, 1, 48);
+                    else
+                        break;
+                game.level.set(7, 2, 48);
+            }
+            if (game.board.get(8, 1) == 3 - splayer) {
+                if (game.board.get(6, 1) == 3 - splayer)
+                    game.level.set(7, 1, 64);
+                if (game.board.get(8, 3) == 3 - splayer)
+                    game.level.set(8, 2, 64);
+            }
+            if (game.board.get(8, 8) == splayer) {
+                for (let i = 7; i > 1; i--)
+                    if (game.board.get(8, i + 1) == splayer)
+                        game.level.set(8, i, 48);
+                    else
+                        break;
+                for (let i = 7; i > 1; i--)
+                    if (game.board.get(i + 1, 8) == splayer)
+                        game.level.set(i, 8, 48);
+                    else
+                        break;
+                game.level.set(7, 7, 48);
+            }
+            if (game.board.get(8, 8) == 3 - splayer) {
+                if (game.board.get(6, 8) == 3 - splayer)
+                    game.level.set(7, 8, 64);
+                if (game.board.set(8, 6) == 3 - splayer)
+                    game.level.set(8, 7, 64);
+            }
+            let x = -1, y = -1, maxn = -100;
+            let maxs = new Array();
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 8; j++) {
+                    let sd = check(i, j);
+                    if (sd > 0) {
+                        sd += game.level.get(i, j);
+                        if (sd > maxn) {
+                            maxn = sd;
+                            maxs = new Array();
+                        }
+                        if (sd == maxn) {
+                            let pos = {
+                                X: i,
+                                Y: j
+                            };
+                            maxs.push(pos);
+                        }
+                    }
+                }
+            }
+            if (maxs.length == 0) {
+                return {
+                    X: -1,
+                    Y: -1
+                };
+            }
+            return maxs[Math.floor(Math.random() * maxs.length)];
+        }
+        function NewGameUI() {
+            let mask = document.createElement('div');
+            document.body.appendChild(mask);
+            mask.style.position = 'fixed';
+            mask.style.height = '100vh';
+            mask.style.width = '100vw';
+            mask.style.zIndex = 100;
+            document.body.mask = mask;
+            let NewGameUIBox = document.createElement('div');
+            mask.appendChild(NewGameUIBox);
+            NewGameUIBox.style.backgroundColor = '#dddddd';
+            NewGameUIBox.style.position = 'absolute';
+            NewGameUIBox.style.width = '200px';
+            NewGameUIBox.style.height = '300px';
+            NewGameUIBox.style.left = 'calc(50vw - 100px)';
+            NewGameUIBox.style.top = 'calc(50vh - 150px)';
+            NewGameUIBox.style.borderRadius = '20px';
+            NewGameUIBox.style.boxShadow = '10px 10px 5px #777777';
+            let idbPlayBlack = document.createElement('div');
+            NewGameUIBox.appendChild(idbPlayBlack);
+            idbPlayBlack.classList.add('idbGameModeSelector');
+            idbPlayBlack.style.top = '40px';
+            idbPlayBlack.innerText = '执黑';
+            idbPlayBlack.onclick = function () {
+                document.body.removeChild(document.body.mask);
+                document.body.mask = undefined;
+                game.mode = "black";
+                NewGameInitial();
+            };
+            let idbPlayWhite = document.createElement('div');
+            NewGameUIBox.appendChild(idbPlayWhite);
+            idbPlayWhite.classList.add('idbGameModeSelector');
+            idbPlayWhite.style.top = '120px';
+            idbPlayWhite.innerText = '执白';
+            idbPlayWhite.onclick = function () {
+                document.body.removeChild(document.body.mask);
+                document.body.mask = undefined;
+                game.mode = "white";
+                NewGameInitial();
+            };
+            let idbPlayBoth = document.createElement('div');
+            NewGameUIBox.appendChild(idbPlayBoth);
+            idbPlayBoth.classList.add('idbGameModeSelector');
+            idbPlayBoth.style.top = '200px';
+            idbPlayBoth.innerText = '双人局';
+            idbPlayBoth.onclick = function () {
+                document.body.removeChild(document.body.mask);
+                document.body.mask = undefined;
+                game.mode = "double";
+                NewGameInitial();
+            };
+        }
+        function GameOver() {
+            let a = judge();
+            let white = a.white;
+            let black = a.black;
+            let s;
+            if (black > white) {
+                s = black + ':' + white + ',Black wins!';
+            }
+            else if (black < white) {
+                s = black + ':' + white + ',White wins!';
+            } else {
+                s = black + ':' + white + ',Draw!';
+            }
+            setTimeout((s) => {
+                alert(s);
+            }, 100, s);
+        }
+        function Hint() {
+            if ((game.current_player == game.white) && (game.mode == 'black'))
+                return;
+            if ((game.current_player == game.black) && (game.mode == 'white'))
+                return;
+            let a = run(game.current_player);
+            click(a.X, a.Y);
+        }
+    </script>
+</head>
+
+<body>
+    <script>
+        let dashboard = document.createElement('div');
+        document.body.appendChild(dashboard);
+        dashboard.classList.add('dashboard');
+        let inboard = document.createElement('div');
+        dashboard.appendChild(inboard);
+        inboard.classList.add('inboard');
+        let idbNewGame = document.createElement('div');
+        dashboard.appendChild(idbNewGame);
+        idbNewGame.classList.add('idbNewGame');
+        idbNewGame.innerText = '新游戏';
+        idbNewGame.onclick = NewGameUI;
+        let idbHint = document.createElement('div');
+        dashboard.appendChild(idbHint);
+        idbHint.classList.add('idbHint');
+        idbHint.innerText = '提示';
+        idbHint.onclick = Hint;
+        dashboard.appendChild(game.current_player_shower);
+        game.current_player_shower.style.position = 'absolute';
+        game.current_player_shower.style.height = '40px';
+        game.current_player_shower.style.width = '40px';
+        game.current_player_shower.style.borderRadius = '20px';
+        game.current_player_shower.style.left = '20px';
+        game.current_player_shower.style.top = '520px';
+        for (let i = 1; i <= 8; i++) {
+            for (let j = 1; j <= 8; j++) {
+                game.winMap.set(i, j, document.createElement("div"));
+                inboard.appendChild(game.winMap.get(i, j));
+                game.winMap.get(i, j).style.position = 'absolute';
+                game.winMap.get(i, j).style.height = '50px';
+                game.winMap.get(i, j).style.width = '50px';
+                game.winMap.get(i, j).style.borderRadius = '25px';
+                game.winMap.get(i, j).style.left = (j - 1) * 60 + 5 + 'px';
+                game.winMap.get(i, j).style.top = (i - 1) * 60 + 5 + 'px';
+                game.winMap.get(i, j).i = i;
+                game.winMap.get(i, j).j = j;
+                game.winMap.get(i, j).onclick = function () {
+                    if ((game.current_player == game.white) && (game.mode == 'black'))
+                        return;
+                    if ((game.current_player == game.black) && (game.mode == 'white'))
+                        return;
+                    click(i, j);
+                };
+            }
+        }
+        function click(x, y) {
+            if (check(x, y) != 0) {
+                chess(x, y);
+                game.board.set(x, y, game.current_player);
+                switch (game.current_player) {
+                    case game.black:
+                        game.winMap.get(x, y).style.backgroundColor = 'black';
+
+                        break;
+                    case game.white:
+                        game.winMap.get(x, y).style.backgroundColor = 'white';
+                        break;
+
+                    default:
+                        game.winMap.get(x, y).style.backgroundColor = null;
+                        break;
+                }
+                game.current_player = game.black + game.white - game.current_player;
+                if (!chessable(game.current_player)) {
+                    game.current_player = game.black + game.white - game.current_player;
+                    if (!chessable(game.current_player)) {
+                        GameOver();
+                    }
+                } else {
+                    if (game.current_player == game.black)
+                        game.current_player_shower.style.backgroundColor = 'black';
+                    else
+                        game.current_player_shower.style.backgroundColor = 'white';
+
+                }
+                if ((game.mode == 'white') && (game.current_player == game.black)) {
+                    setTimeout(() => {
+                        let position = run(game.black);
+                        click(position.X, position.Y);
+                    }, (1000));
+                } else if ((game.mode == 'black') && (game.current_player == game.white)) {
+                    setTimeout(() => {
+                        let position = run(game.black);
+                        click(position.X, position.Y);
+                    }, (1000));
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
