@@ -3,6 +3,15 @@ interface ButtonProps {
     onClick?: any
     children?: string
 }
-export default function Button(props: ButtonProps) {
-    return <button className="dash_button" onClick={props.onClick} style={{ left: props.left }} >{props.children}</button >
+const Button: React.FC<ButtonProps> = (props) => {
+    return (
+        <div
+            className="dash_button"
+            onClick={props.onClick}
+            style={{ left: props.left }}
+        >
+            {props.children}
+        </div >
+    )
 }
+export default Button

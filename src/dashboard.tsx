@@ -1,6 +1,7 @@
+import React from "react";
 import Button from "./Button";
 
-export default function DashBoard() {
+const DashBoard: React.FC = () => {
     return (
         <div className="dashboard">
             <div className="inboard"></div>
@@ -9,3 +10,4 @@ export default function DashBoard() {
         </div >
     )
 }
+export default DashBoard
