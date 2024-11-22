@@ -40,7 +40,7 @@ export const GetMoveValue = (status: GameStatus, coord: COORD): number => {
     return t;
 }
 
-export const ReversePieces = (status: GameStatus, coord: COORD): StatusAction => {
+export const MakeMove = (status: GameStatus, coord: COORD): StatusAction => {
     let boardUpdater = new Array<{ coord: COORD, piece: Player }>();
     let gameStatusUpdater: StatusAction = {
         type: 'chess',
@@ -92,6 +92,7 @@ export const GetValidMovements = (status: GameStatus, player: Player): Array<COO
 }
 
 export const Decide = (status: GameStatus): COORD => {
+    console.log("Deciding!");
     const player = status.currentPlayer;
     const board = status.board.slice();
     let rank = Array(8).fill(null).map(() => Array(8).fill(0));

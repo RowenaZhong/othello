@@ -4,6 +4,8 @@ import Inboard from "./inboard";
 import { GameStatusContext, StatusDispatchContext } from "./StatusProvider";
 import { NewGamer } from "./NewGamer";
 import { Piece } from "./cell";
+import { Decide, ExistValidMovement, MakeMove } from "./game";
+import { GetEnemy, statusReducer } from "./status";
 const DashBoard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
     const dispatch = useContext(StatusDispatchContext);
@@ -11,7 +13,21 @@ const DashBoard: React.FC = () => {
     if (gameStatus.gameOver)
         console.log('Game Over');
     const Hint = () => {
-        if (!gameStatus.gameOver) return;
+        if (gameStatus.gameOver) return;
+        let updater = MakeMove(gameStatus, Decide(gameStatus));
+        dispatch(updater);
+        const newGameStatus = statusReducer(gameStatus, updater);
+        if (ExistValidMovement(newGameStatus, GetEnemy(newGameStatus.currentPlayer)))
+            dispatch({
+                type: 'transfer',
+                currentPlayer: GetEnemy(newGameStatus.currentPlayer)
+            });
+
+        else if (!ExistValidMovement(newGameStatus, newGameStatus.currentPlayer))
+            dispatch({
+                type: 'gameover',
+                winner: GetEnemy(newGameStatus.currentPlayer)
+            });
     }
     return (
         <div className="dashboard">
