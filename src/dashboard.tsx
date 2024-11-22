@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "./Button";
+import Button from "./button";
 import Inboard from "./inboard";
 const DashBoard: React.FC = () => {
     return (

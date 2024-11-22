@@ -1,12 +1,20 @@
 import React, { useContext } from "react"
 import { StatusContext, StatusProvider } from "./StatusProvider"
 import { Cell } from "./cell";
+import { Player } from "./status";
 const Inboard: React.FC = () => {
     const CellItems = useContext(StatusContext);
-    const CellJSX = CellItems.game.map((rowCell, row) =>
-        rowCell.map((player, col) =>
-            <Cell key={row * 8 + col} player={player} col={col} row={row} />
-        )
+    const handleClick = ({ player, row, col }: { player: Player, row: number, col: number }) => {
+        if (player) return;
+    }
+    const CellJSX = CellItems.board.map((rowCell, row) => {
+        console.log(rowCell, row);
+        return rowCell.map((player, col) => {
+            console.log(player, row, col);
+            return <Cell key={row * 8 + col} player={player} col={col} row={row} onclick={handleClick} />
+        })
+    }
+
     );
     return (
         <div className="inboard">
