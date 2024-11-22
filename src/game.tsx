@@ -29,7 +29,7 @@ export const GetMoveValue = (status: GameStatus, coord: COORD): number => {
             if (!IsValidCoord({ X: u + dx, Y: v + dy }))
                 break;
         }
-        if (IsValidCoord({ X: u, Y: v }) && board[u + dx][v + dy] == currentPlayer) {
+        if (IsValidCoord({ X: u + dx, Y: v + dy }) && board[u + dx][v + dy] == currentPlayer) {
             u = x, v = y;
             while (board[u + dx][v + dy] == GetEnemy(currentPlayer)) {
                 u += dx, v += dy;
@@ -61,7 +61,7 @@ export const Chess = (status: GameStatus, coord: COORD): StatusAction => {
             if (!IsValidCoord({ X: u + dx, Y: v + dy }))
                 break;
         }
-        if (IsValidCoord({ X: u, Y: v }) && board[u + dx][v + dy] == currentPlayer) {
+        if (IsValidCoord({ X: u + dx, Y: v + dy }) && board[u + dx][v + dy] == currentPlayer) {
             u = coord.X, v = coord.Y;
             while (board[u + dx][v + dy] == GetEnemy(currentPlayer)) {
                 u += dx, v += dy;
@@ -75,11 +75,19 @@ export const Chess = (status: GameStatus, coord: COORD): StatusAction => {
 }
 
 export const chessable = (status: GameStatus, player: Player): boolean => {
-    let st = status;
-    st.currentPlayer = player;
+    let st = { ...status, currentPlayer: player };
     for (let i = 0; i < 8; i++)
         for (let j = 0; j < 8; j++)
             if (GetMoveValue(st, { X: i, Y: j }))
                 return true;
     return false;
+}
+export const GetMove = (status: GameStatus, player: Player): Array<COORD> => {
+    let st = { ...status, currentPlayer: player };
+    let ret = new Array<COORD>()
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            if (GetMoveValue(st, { X: i, Y: j }))
+                ret.push({ X: i, Y: j });
+    return ret;
 }

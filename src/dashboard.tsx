@@ -7,7 +7,7 @@ const DashBoard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
     const dispatch = useContext(StatusDispatchContext);
     if (gameStatus.gameOver)
-        console.log('GameOver!');
+        console.log('Game Over');
     const NewGame = () => {
         //start ui
         let updater: StatusAction = {
