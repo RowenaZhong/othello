@@ -1,10 +1,10 @@
-import React from "react";
+﻿import React from "react";
 import { Player } from "./status";
 import { COORD } from "./status";
 interface CellUI {
     piece: Player
     coord: COORD
-    onclick: any
+    onclick: (coord: COORD)=>void
     left?: number
     top?: number
 }

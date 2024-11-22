@@ -1,16 +1,16 @@
-import { COORD, StatusAction, statusReducer } from "./status";
+﻿import { COORD, StatusAction, statusReducer } from "./status";
 import { GetEnemy, Player, GameStatus } from "./status";
 
 export const IsValidCoord = (coord: COORD): boolean => {
     return coord.X >= 0 && coord.X < 8 && coord.Y >= 0 && coord.Y < 8;
 }
-export const Directions = [
+const Directions = [
     [-1, -1], [-1, 0], [-1, 1],
     [0, -1], [0, 1],
     [1, -1], [1, 0], [1, 1]
 ]
 export const GetMoveValue = (status: GameStatus, coord: COORD): number => {
-    let x = coord.X, y = coord.Y;
+    const x = coord.X, y = coord.Y;
     const board = status.board;
     const currentPlayer = status.currentPlayer;
     if ((x < 0) || (x > 7) || (y < 0) || (y > 7))
@@ -19,20 +19,20 @@ export const GetMoveValue = (status: GameStatus, coord: COORD): number => {
         return 0;
 
     let t = 0, u: number, v: number;
-    for (let d of Directions) {
+    for (const d of Directions) {
         const dx = d[0], dy = d[1];
-        u = x, v = y;
+        [u, v] = [x, y];
         if (!IsValidCoord({ X: u + dx, Y: v + dy }))
             continue;
         while (board[u + dx][v + dy] == GetEnemy(currentPlayer)) {
-            u += dx, v += dy;
+            [u, v] = [u + dx, v + dy];
             if (!IsValidCoord({ X: u + dx, Y: v + dy }))
                 break;
         }
         if (IsValidCoord({ X: u + dx, Y: v + dy }) && board[u + dx][v + dy] == currentPlayer) {
-            u = x, v = y;
+            [u, v] = [x, y];
             while (board[u + dx][v + dy] == GetEnemy(currentPlayer)) {
-                u += dx, v += dy;
+                [u, v] = [u + dx, v + dy];
                 t++;
             }
         }
@@ -41,30 +41,29 @@ export const GetMoveValue = (status: GameStatus, coord: COORD): number => {
 }
 
 export const ReversePiece = (status: GameStatus, coord: COORD): StatusAction => {
-    let boardUpdater = new Array<{ coord: COORD, piece: Player }>();
-    let gameStatusUpdater: StatusAction = {
+    const boardUpdater = new Array<{ coord: COORD, piece: Player }>();
+    const gameStatusUpdater: StatusAction = {
         type: 'chess',
         boardUpdater: boardUpdater
     }
     const board = status.board;
     const currentPlayer = status.currentPlayer;
     boardUpdater.push({ coord: coord, piece: currentPlayer });
-    let t = 0, u: number, v: number;
-    for (let d of Directions) {
-        let dx = d[0], dy = d[1];
+    let u: number, v: number;
+    for (const d of Directions) {
+        const dx = d[0], dy = d[1];
         [u, v] = [coord.X, coord.Y]
         if (!IsValidCoord({ X: u + dx, Y: v + dy }))
             continue;
         while (board[u + dx][v + dy] == GetEnemy(currentPlayer)) {
-            u += dx, v += dy;
+            [u, v] = [u + dx, v + dy];
             if (!IsValidCoord({ X: u + dx, Y: v + dy }))
                 break;
         }
         if (IsValidCoord({ X: u + dx, Y: v + dy }) && board[u + dx][v + dy] == currentPlayer) {
-            u = coord.X, v = coord.Y;
+            [u, v] = [coord.X, coord.Y];
             while (board[u + dx][v + dy] == GetEnemy(currentPlayer)) {
-                u += dx, v += dy;
-                t++;
+                [u, v] = [u + dx, v + dy];
                 boardUpdater.push({ coord: { X: u, Y: v }, piece: currentPlayer });
             }
         }
@@ -108,13 +107,19 @@ export const MakeMove = (gameStatus: GameStatus, coord: COORD, dispatch: React.D
 
 }
 
-export const Judge = (): Array<number> => {
-    let result = [0, 0];
+export const Judge = (board: Player[][]): Array<number> => {
+    const result = [0, 0];
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            switch (board[i][j]) {
+                case 'black': result[0]++; break;
+                case 'white': result[1]++; break;
+            }
     return result;
 }
 
 export const ExistValidMovement = (status: GameStatus, player: Player): boolean => {
-    let st = { ...status, currentPlayer: player };
+    const st = { ...status, currentPlayer: player };
     for (let i = 0; i < 8; i++)
         for (let j = 0; j < 8; j++)
             if (GetMoveValue(st, { X: i, Y: j }))
@@ -122,8 +127,8 @@ export const ExistValidMovement = (status: GameStatus, player: Player): boolean 
     return false;
 }
 export const GetValidMovements = (status: GameStatus, player: Player): Array<COORD> => {
-    let st = { ...status, currentPlayer: player };
-    let ret = new Array<COORD>()
+    const st = { ...status, currentPlayer: player };
+    const ret = new Array<COORD>()
     for (let i = 0; i < 8; i++)
         for (let j = 0; j < 8; j++)
             if (GetMoveValue(st, { X: i, Y: j }))
@@ -132,10 +137,9 @@ export const GetValidMovements = (status: GameStatus, player: Player): Array<COO
 }
 
 export const Decide = (status: GameStatus): COORD => {
-    console.log("Deciding!");
     const player = status.currentPlayer;
     const board = status.board.slice();
-    let rank = Array(8).fill(null).map(() => Array(8).fill(0));
+    const rank = Array(8).fill(null).map(() => Array(8).fill(0));
     rank[0][0] = rank[0][7] = rank[7][0] = rank[7][7] = 64;
     rank[0][1] = rank[0][6] = rank[1][0] = rank[1][7] = rank[6][0] = rank[6][7] = rank[7][1] = rank[7][6] = -32;
     rank[1][1] = rank[1][6] = rank[6][1] = rank[6][6] = -64;
@@ -144,7 +148,6 @@ export const Decide = (status: GameStatus): COORD => {
         rank[0][i] = rank[7][i] = rank[i][0] = rank[i][7] = 32;
         rank[2][i] = rank[i][2] = rank[5][i] = rank[i][5] = 16;
     }
-
     if (board[0][0] == player) {
         for (let i = 1; i < 7; i++)
             if (board[0][i - 1] == player)
@@ -156,6 +159,7 @@ export const Decide = (status: GameStatus): COORD => {
             else break;
         rank[1][1] = 48;
     }
+    console.log(rank);
     if (board[0][0] == GetEnemy(player)) {
         if (board[0][2] == GetEnemy(player))
             rank[0][1] = 64;
@@ -228,8 +232,9 @@ export const Decide = (status: GameStatus): COORD => {
                     maxScorePositionList.push({ X: i, Y: j });
             }
         }
+    console.log(maxScorePositionList);
     if (maxScorePositionList.length > 0) {
-        let idx = Math.floor(Math.random() * maxScorePositionList.length);
+        const idx = Math.floor(Math.random() * maxScorePositionList.length);
         return maxScorePositionList[idx];
     }
     return { X: -1, Y: -1 };
