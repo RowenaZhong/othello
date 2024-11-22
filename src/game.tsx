@@ -40,15 +40,15 @@ export const GetMoveValue = (status: GameStatus, coord: COORD): number => {
     return t;
 }
 
-export const Chess = (status: GameStatus, coord: COORD): StatusAction => {
-    let boardUpdater = new Array<{ coord: COORD, pawn: Player }>();
+export const ReversePieces = (status: GameStatus, coord: COORD): StatusAction => {
+    let boardUpdater = new Array<{ coord: COORD, piece: Player }>();
     let gameStatusUpdater: StatusAction = {
         type: 'chess',
         boardUpdater: boardUpdater
     }
     const board = status.board;
     const currentPlayer = status.currentPlayer;
-    boardUpdater.push({ coord: coord, pawn: currentPlayer });
+    boardUpdater.push({ coord: coord, piece: currentPlayer });
     let t = 0, u: number, v: number;
     for (let d of Directions) {
         let dx = d[0], dy = d[1];
@@ -65,7 +65,7 @@ export const Chess = (status: GameStatus, coord: COORD): StatusAction => {
             while (board[u + dx][v + dy] == GetEnemy(currentPlayer)) {
                 u += dx, v += dy;
                 t++;
-                boardUpdater.push({ coord: { X: u, Y: v }, pawn: currentPlayer });
+                boardUpdater.push({ coord: { X: u, Y: v }, piece: currentPlayer });
             }
         }
 

@@ -57,7 +57,7 @@ export interface StatusAction {
     computerProvider?: Player
     currentPlayer?: Player
     gameOver?: boolean
-    boardUpdater?: Array<{ coord: COORD, pawn: Player }>
+    boardUpdater?: Array<{ coord: COORD, piece: Player }>
 }
 
 export const statusReducer = (status: GameStatus, action: StatusAction): GameStatus => {
@@ -66,7 +66,7 @@ export const statusReducer = (status: GameStatus, action: StatusAction): GameSta
         case 'chess':
             newStatus = { ...status };
             for (const upd of action.boardUpdater!)
-                newStatus.board[upd.coord.X][upd.coord.Y] = upd.pawn;
+                newStatus.board[upd.coord.X][upd.coord.Y] = upd.piece;
             return newStatus;
         case 'reset':
             newStatus.computerPlayer = action.computerProvider!;

@@ -1,14 +1,14 @@
 import React, { useContext } from "react"
 import { GameStatusContext, StatusDispatchContext } from "./StatusProvider"
 import { Cell } from "./cell";
-import { Chess, ExistValidMovement, GetValidMovements, GetMoveValue } from "./game";
+import { ReversePieces, ExistValidMovement, GetValidMovements, GetMoveValue } from "./game";
 import { COORD, GetEnemy, statusReducer } from "./status";
 const Inboard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
     const dispatch = useContext(StatusDispatchContext);
     const handleClick = (coord: COORD) => {
         if (!gameStatus.gameOver && GetMoveValue(gameStatus, coord) != 0) {
-            const updater = Chess(gameStatus, coord);
+            const updater = ReversePieces(gameStatus, coord);
             dispatch(updater);
             const newGameStatus = statusReducer(gameStatus, updater);
             if (ExistValidMovement(newGameStatus, GetEnemy(newGameStatus.currentPlayer)))
@@ -30,8 +30,8 @@ const Inboard: React.FC = () => {
 
     }
     const CellJSX = gameStatus.board.map((rowCell, row) => {
-        return rowCell.map((pawn, col) => {
-            return <Cell key={`${row}-${col}`} pawn={pawn} coord={{ X: row, Y: col }} onclick={handleClick} />
+        return rowCell.map((piece, col) => {
+            return <Cell key={`${row}-${col}`} piece={piece} coord={{ X: row, Y: col }} onclick={handleClick} />
         })
     }
 

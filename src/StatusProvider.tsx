@@ -1,5 +1,5 @@
 import React, { createContext, useReducer } from "react";
-import { GameStatus, StatusAction, statusReducer } from "./status";
+import { GameStatus, statusReducer } from "./status";
 export const GameStatusContext = createContext<GameStatus>(new GameStatus);
 export const StatusDispatchContext = createContext<React.Dispatch<any>>(() => { });
 

@@ -3,6 +3,7 @@ import { DashButton } from "./button";
 import Inboard from "./inboard";
 import { GameStatusContext, StatusDispatchContext } from "./StatusProvider";
 import { NewGamer } from "./NewGamer";
+import { Piece } from "./cell";
 const DashBoard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
     const dispatch = useContext(StatusDispatchContext);
@@ -15,6 +16,9 @@ const DashBoard: React.FC = () => {
     return (
         <div className="dashboard">
             <Inboard />
+            <div style={{ position: "absolute", left: 20, top: 520, height: 50, width: 50 }}>
+                <Piece piece={gameStatus.currentPlayer} coord={{ X: - 1, Y: -1 }} onclick={() => { }} />
+            </div>
             <DashButton left={140} onClick={() => setNewgaming(true)}>新游戏</DashButton>
             <DashButton left={300} onClick={Hint}>提示</DashButton>
             <NewGamer newgaming={newgaming} dispatch={dispatch} setNewGamingUI={setNewgaming}></NewGamer>
