@@ -1,17 +1,30 @@
 import React, { useContext } from "react"
-import { StatusContext, StatusProvider } from "./StatusProvider"
+import { GameStatusContext, StatusDispatchContext } from "./StatusProvider"
 import { Cell } from "./cell";
-import { Player } from "./status";
+import { Chess, chessable, GetMoveValue } from "./game";
+import { COORD, GameStatus, GetEnemy } from "./status";
 const Inboard: React.FC = () => {
-    const CellItems = useContext(StatusContext);
-    const handleClick = ({ player, row, col }: { player: Player, row: number, col: number }) => {
-        if (player) return;
+    const gameStatus = useContext(GameStatusContext);
+    const gameUpd = useContext(StatusDispatchContext);
+    const handleClick = (coord: COORD) => {
+        if (!gameStatus.gameOver && GetMoveValue(gameStatus, coord) != 0) {
+            gameUpd(Chess(gameStatus, coord));
+            if (chessable(gameStatus, GetEnemy(gameStatus.currentPlayer)))
+                gameUpd({
+                    type: 'transfer',
+                    currentPlayer: GetEnemy(gameStatus.currentPlayer)
+                });
+            else if (!chessable(gameStatus, gameStatus.currentPlayer))
+                gameUpd({
+                    type: 'gameover',
+                    winner: GetEnemy(gameStatus.currentPlayer)
+                })
+
+        }
     }
-    const CellJSX = CellItems.board.map((rowCell, row) => {
-        console.log(rowCell, row);
-        return rowCell.map((player, col) => {
-            console.log(player, row, col);
-            return <Cell key={row * 8 + col} player={player} col={col} row={row} onclick={handleClick} />
+    const CellJSX = gameStatus.board.map((rowCell, row) => {
+        return rowCell.map((pawn, col) => {
+            return <Cell key={`${row}-${col}`} pawn={pawn} coord={{ X: row, Y: col }} onclick={handleClick} />
         })
     }
 
@@ -26,9 +39,7 @@ const Inboard: React.FC = () => {
                 gridRowGap: "10px",
                 gridColumnGap: "10px"
             }}>
-                <StatusProvider>
-                    {CellJSX}
-                </StatusProvider>
+                {CellJSX}
             </div>
         </div>
     )

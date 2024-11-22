@@ -1,22 +1,18 @@
 import React, { createContext, useReducer } from "react";
-import { Status } from "./status";
-export const StatusContext = createContext<Status>(new Status);
+import { GameStatus, StatusAction, statusReducer } from "./status";
+export const GameStatusContext = createContext<GameStatus>(new GameStatus);
 export const StatusDispatchContext = createContext<React.Dispatch<any>>(() => { });
+
 export const StatusProvider: React.FC<{ children: any }> = ({ children }: { children: any }) => {
     const [status, dispatch] = useReducer(
         statusReducer,
-        new Status
+        new GameStatus
     );
     return (
-        <StatusContext.Provider value={status}>
+        <GameStatusContext.Provider value={status}>
             <StatusDispatchContext.Provider value={dispatch}>
                 {children}
             </StatusDispatchContext.Provider>
-        </StatusContext.Provider>
+        </GameStatusContext.Provider>
     );
-}
-function statusReducer(status: Status, action: any): Status {
-    switch (action.type) {
-        default: return status;
-    }
 }

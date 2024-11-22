@@ -4,9 +4,12 @@
 import './App.css'
 import React from 'react'
 import DashBoard from './dashboard'
+import { StatusProvider } from "./StatusProvider";
 const App: React.FC = () => {
     return (
-        <DashBoard />
+        <StatusProvider>
+            <DashBoard />
+        </StatusProvider>
     )
 }
 

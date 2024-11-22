@@ -1,17 +1,17 @@
 import React from "react";
 import { Player } from "./status";
+import { COORD } from "./status";
 interface CellUI {
-    player: Player
-    row: number
-    col: number
+    pawn: Player
+    coord: COORD
     onclick: any
 }
 export const Cell: React.FC<CellUI> = (cellui) => {
     return (
-        <div key={`${cellui.row}-${cellui.col}`} className="cell" onClick={() => cellui.onclick(cellui.player, cellui.row, cellui.col)}>
+        <div className="cell" onClick={() => cellui.onclick(cellui.coord)}>
             {
-                cellui.player &&
-                <div className={`pawn`} style={{ backgroundColor: cellui.player }}>
+                cellui.pawn &&
+                <div className={`pawn`} style={{ backgroundColor: cellui.pawn }}>
                 </div>
             }
         </div >
