@@ -1,29 +1,23 @@
 import React, { useContext } from "react";
-import Button from "./button";
+import { DashButton } from "./button";
 import Inboard from "./inboard";
 import { GameStatusContext, StatusDispatchContext } from "./StatusProvider";
-import { StatusAction } from "./status";
+import { NewGamer } from "./NewGamer";
 const DashBoard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
     const dispatch = useContext(StatusDispatchContext);
+    const [newgaming, setNewgaming] = React.useState(false);
     if (gameStatus.gameOver)
         console.log('Game Over');
-    const NewGame = () => {
-        //start ui
-        let updater: StatusAction = {
-            type: 'reset',
-            currentPlayer: 'black'
-        }
-        dispatch(updater);
-    }
     const Hint = () => {
         if (!gameStatus.gameOver) return;
     }
     return (
         <div className="dashboard">
             <Inboard />
-            <Button left={140} onClick={NewGame}>新游戏</Button>
-            <Button left={300} onClick={Hint}>提示</Button>
+            <DashButton left={140} onClick={() => setNewgaming(true)}>新游戏</DashButton>
+            <DashButton left={300} onClick={Hint}>提示</DashButton>
+            <NewGamer newgaming={newgaming} dispatch={dispatch} setNewGamingUI={setNewgaming}></NewGamer>
         </div >
     )
 }
