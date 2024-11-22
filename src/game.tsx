@@ -1,4 +1,4 @@
-import { COORD, StatusAction } from "./status";
+import { COORD, StatusAction, statusReducer } from "./status";
 import { GetEnemy, Player, GameStatus } from "./status";
 
 export const IsValidCoord = (coord: COORD): boolean => {
@@ -40,7 +40,7 @@ export const GetMoveValue = (status: GameStatus, coord: COORD): number => {
     return t;
 }
 
-export const MakeMove = (status: GameStatus, coord: COORD): StatusAction => {
+export const ReversePiece = (status: GameStatus, coord: COORD): StatusAction => {
     let boardUpdater = new Array<{ coord: COORD, piece: Player }>();
     let gameStatusUpdater: StatusAction = {
         type: 'chess',
@@ -71,6 +71,46 @@ export const MakeMove = (status: GameStatus, coord: COORD): StatusAction => {
 
     }
     return gameStatusUpdater;
+}
+
+export const MakeMove = (gameStatus: GameStatus, coord: COORD, dispatch: React.Dispatch<StatusAction>): void => {
+    if (GetMoveValue(gameStatus, coord) == 0) return;
+    const updater = ReversePiece(gameStatus, coord);
+    dispatch(updater);
+    const gameStatusAfterMoved = statusReducer(gameStatus, updater);
+    let gameStatusAfterTransfer: GameStatus;
+    if (ExistValidMovement(gameStatusAfterMoved, GetEnemy(gameStatusAfterMoved.currentPlayer))) {
+        dispatch({
+            type: 'transfer',
+            currentPlayer: GetEnemy(gameStatusAfterMoved.currentPlayer)
+        });
+        gameStatusAfterTransfer = statusReducer(gameStatusAfterMoved, {
+            type: 'transfer',
+            currentPlayer: GetEnemy(gameStatusAfterMoved.currentPlayer)
+        })
+    }
+
+    else if (!ExistValidMovement(gameStatusAfterMoved, gameStatusAfterMoved.currentPlayer)) {
+        dispatch({
+            type: 'gameover'
+        });
+        gameStatusAfterTransfer = statusReducer(gameStatusAfterMoved, {
+            type: 'gameover'
+        })
+    } else gameStatusAfterTransfer = gameStatusAfterMoved;
+
+    if (gameStatusAfterTransfer.currentPlayer == gameStatusAfterTransfer.computerPlayer) {
+        const decision = Decide(gameStatusAfterTransfer);
+        setTimeout(() => MakeMove(gameStatusAfterTransfer, decision, dispatch),
+            1000);
+
+    }
+
+}
+
+export const Judge = (): Array<number> => {
+    let result = [0, 0];
+    return result;
 }
 
 export const ExistValidMovement = (status: GameStatus, player: Player): boolean => {

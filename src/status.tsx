@@ -81,7 +81,6 @@ export const statusReducer = (status: GameStatus, action: StatusAction): GameSta
             newStatus = { ...status };
             newStatus.gameOver = true;
             newStatus.currentPlayer = null;
-            setTimeout(() => alert('Game Over!'), 10);
             return newStatus;
         default: throw Error('Unknown action type: ' + action.type);
     }

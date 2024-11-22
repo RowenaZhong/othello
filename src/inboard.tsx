@@ -1,28 +1,18 @@
 import React, { useContext } from "react"
 import { GameStatusContext, StatusDispatchContext } from "./StatusProvider"
 import { Cell } from "./cell";
-import { MakeMove, ExistValidMovement, GetMoveValue } from "./game";
-import { COORD, GetEnemy, statusReducer } from "./status";
+import { GetMoveValue, Judge, MakeMove } from "./game";
+import { COORD } from "./status";
 const Inboard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
     const dispatch = useContext(StatusDispatchContext);
+    if (gameStatus.gameOver) {
+        const [black, white] = Judge();
+        alert(black + ':' + white + (black == white) ? ",Draw!" : (black > white) ? ',Black wins!' : 'White wins!');
+    }
     const handleClick = (coord: COORD) => {
-        if (!gameStatus.gameOver && GetMoveValue(gameStatus, coord) != 0) {
-            const updater = MakeMove(gameStatus, coord);
-            dispatch(updater);
-            const newGameStatus = statusReducer(gameStatus, updater);
-            if (ExistValidMovement(newGameStatus, GetEnemy(newGameStatus.currentPlayer)))
-                dispatch({
-                    type: 'transfer',
-                    currentPlayer: GetEnemy(newGameStatus.currentPlayer)
-                });
-
-            else if (!ExistValidMovement(newGameStatus, newGameStatus.currentPlayer))
-                dispatch({
-                    type: 'gameover',
-                    winner: GetEnemy(newGameStatus.currentPlayer)
-                });
-
+        if (!gameStatus.gameOver && gameStatus.currentPlayer != gameStatus.computerPlayer && GetMoveValue(gameStatus, coord) != 0) {
+            MakeMove(gameStatus, coord, dispatch);
         }
 
     }
