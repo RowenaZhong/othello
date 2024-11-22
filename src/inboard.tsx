@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { GameStatusContext, StatusDispatchContext } from "./StatusProvider"
 import { Cell } from "./cell";
-import { Chess, chessable, GetMove, GetMoveValue } from "./game";
+import { Chess, ExistValidMovement, GetValidMovements, GetMoveValue } from "./game";
 import { COORD, GetEnemy, statusReducer } from "./status";
 const Inboard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
@@ -11,19 +11,21 @@ const Inboard: React.FC = () => {
             const updater = Chess(gameStatus, coord);
             dispatch(updater);
             const newGameStatus = statusReducer(gameStatus, updater);
-            if (chessable(newGameStatus, GetEnemy(newGameStatus.currentPlayer)))
+            if (ExistValidMovement(newGameStatus, GetEnemy(newGameStatus.currentPlayer)))
                 dispatch({
                     type: 'transfer',
                     currentPlayer: GetEnemy(newGameStatus.currentPlayer)
                 }), console.log('transfer!');
-            else if (!chessable(newGameStatus, newGameStatus.currentPlayer))
+
+            else if (!ExistValidMovement(newGameStatus, newGameStatus.currentPlayer))
                 dispatch({
                     type: 'gameover',
                     winner: GetEnemy(newGameStatus.currentPlayer)
                 }), console.log('gameOver!');
+
             else console.log('continue!');
-            console.log(GetMove(newGameStatus, newGameStatus.currentPlayer));
-            console.log(GetMove(newGameStatus, GetEnemy(newGameStatus.currentPlayer)));
+            console.log(GetValidMovements(newGameStatus, newGameStatus.currentPlayer));
+            console.log(GetValidMovements(newGameStatus, GetEnemy(newGameStatus.currentPlayer)));
         }
 
     }
