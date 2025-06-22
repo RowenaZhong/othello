@@ -13,6 +13,8 @@ const DashBoard: React.FC = () => {
         console.log('Game Over');
     const Hint = () => {
         if (gameStatus.gameOver) return;
+        console.log(`Hint Disabled: ${gameStatus.currentPlayer == gameStatus.computerPlayer}`);
+        if (gameStatus.currentPlayer == gameStatus.computerPlayer) return;
         MakeMove(gameStatus, Decide(gameStatus), dispatch);
     }
     return (

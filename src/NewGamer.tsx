@@ -1,6 +1,7 @@
 import React from "react"
 import { NewGameButton } from "./button"
 import { StatusAction } from "./status"
+import { Decide, MakeMove } from "./game"
 interface NewGameProp {
     newgaming: boolean
     dispatch: React.Dispatch<StatusAction>
@@ -15,7 +16,6 @@ export const NewGamer: React.FC<NewGameProp> = (props) => {
             currentPlayer: 'black'
         });
         props.setNewGamingUI(false);
-        //TODO: start playing black
     }
     const start_playing_white = () => {
         props.dispatch({
@@ -24,10 +24,10 @@ export const NewGamer: React.FC<NewGameProp> = (props) => {
             currentPlayer: 'black'
         });
         props.setNewGamingUI(false);
-        //TODO: start playing white
+        // FIXME: start playing white
+        // MakeMove(gameStatus, Decide(gameStatus), dispatch);
     }
     const start_playing_twin = () => {
-        //TODO: start playing twin
         props.dispatch({
             type: 'reset',
             computerProvider: null,

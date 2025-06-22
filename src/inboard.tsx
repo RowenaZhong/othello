@@ -17,15 +17,13 @@ const Inboard: React.FC = () => {
         if (!gameStatus.gameOver && gameStatus.currentPlayer != gameStatus.computerPlayer && GetMoveValue(gameStatus, coord) != 0) {
             MakeMove(gameStatus, coord, dispatch);
         }
-
     }
     const CellJSX = gameStatus.board.map((rowCell, row) => {
         return rowCell.map((piece, col) => {
             return <Cell key={`${row}-${col}`} piece={piece} coord={{ X: row, Y: col }} onclick={handleClick} />
         })
-    }
+    });
 
-    );
     return (
         <div className="inboard">
             <div style={{
