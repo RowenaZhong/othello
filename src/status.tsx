@@ -1,3 +1,5 @@
+import { Decide, ReversePiece } from "./game";
+
 export interface COORD {
     X: number
     Y: number
@@ -72,6 +74,16 @@ export const statusReducer = (status: GameStatus, action: StatusAction): GameSta
             newStatus.computerPlayer = action.computerProvider!;
             newStatus.currentPlayer = action.currentPlayer!;
             newStatus.gameOver = false;
+            if (newStatus.computerPlayer === 'black') {
+                const coord = Decide(newStatus);
+                action = ReversePiece(newStatus, coord);
+                newStatus = statusReducer(newStatus, action);
+                action = {
+                    type: 'transfer',
+                    currentPlayer: GetEnemy(newStatus.currentPlayer)
+                };
+                newStatus = statusReducer(newStatus, action);
+            }
             return newStatus;
         case 'transfer':
             newStatus = { ...status };
