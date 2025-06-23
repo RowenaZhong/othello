@@ -3,7 +3,8 @@
     "private": true,
     "version": "0.0.0",
     "type": "module",
-    "homepage": "https://rowenazhong.github.io/othello/",
+    "homepage": "/othello/",
+    "root": "/othello/",
     "scripts": {
         "dev": "vite --host 0.0.0.0",
         "build": "tsc -b && vite build",
