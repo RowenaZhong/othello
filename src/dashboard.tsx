@@ -8,7 +8,7 @@ import { Decide, MakeMove } from "./game";
 const DashBoard: React.FC = () => {
     const gameStatus = useContext(GameStatusContext);
     const dispatch = useContext(StatusDispatchContext);
-    const [newgaming, setNewgaming] = React.useState(false);
+    const [newgaming, setNewgaming] = React.useState(true);
     if (gameStatus.gameOver)
         console.log('Game Over');
     const Hint = () => {
